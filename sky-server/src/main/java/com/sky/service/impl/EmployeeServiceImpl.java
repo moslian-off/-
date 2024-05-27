@@ -9,6 +9,7 @@ import com.sky.context.BaseContext;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.EmployeePageQueryDTO;
+import com.sky.dto.EmployeePasswordDTO;
 import com.sky.entity.Employee;
 import com.sky.exception.AccountLockedException;
 import com.sky.exception.AccountNotFoundException;
@@ -66,7 +67,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         BeanUtils.copyProperties(employeeDTO, employee);
         employee.setPassword(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes(StandardCharsets.UTF_8)));
         employee.setStatus(ENABLE);
-        Long updateId = BaseContext.getCurrentId();
         employeeMapper.insert(employee);
     }
 
@@ -98,6 +98,28 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = new Employee();
         BeanUtils.copyProperties(employeeDTO, employee);
         employeeMapper.update(employee);
+    }
+
+    @Override
+    public void editPassword(EmployeePasswordDTO employeePasswordDTO) {
+        Long empID = employeePasswordDTO.getEmpID();
+        if (empID == null) empID = BaseContext.getCurrentId();
+        Employee e = employeeMapper.getById(empID);
+        String oldPassword = employeePasswordDTO.getOldPassword();
+        oldPassword = DigestUtils.md5DigestAsHex(oldPassword.getBytes());
+        if (e == null) {
+            throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
+        }
+        if (e.getStatus() == 0) {
+            throw new AccountLockedException(MessageConstant.ACCOUNT_LOCKED);
+        }
+        if (!oldPassword.equals(e.getPassword()) ) {
+            throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
+        }
+        String newPassword = employeePasswordDTO.getNewPassword();
+        newPassword = DigestUtils.md5DigestAsHex(newPassword.getBytes());
+        e.setPassword(newPassword);
+        employeeMapper.update(e);
     }
 
 }

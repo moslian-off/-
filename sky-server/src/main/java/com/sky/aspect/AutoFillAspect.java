@@ -20,40 +20,40 @@ import java.time.LocalDateTime;
 @Slf4j
 public class AutoFillAspect {
 
-    @Pointcut("execution(* com.sky.mapper.*(..)) && @annotation(com.sky.annotation.AutoFill)")
+    @Pointcut("execution(* com.sky.mapper.*.*(..)) && @annotation(com.sky.annotation.AutoFill)")
     public void autoFillPointCut() {
     }
 
     @Around("autoFillPointCut()")
-    public boolean autoFill(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+    public Object autoFill(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         log.info("开始公共字段自动填充");
         MethodSignature methodSignature = (MethodSignature) proceedingJoinPoint.getSignature();
-        OperationType type = methodSignature.getMethod().getAnnotation(AutoFill.class).value();
+        Method method = methodSignature.getMethod();
+        AutoFill autoFill = method.getAnnotation(AutoFill.class);
+        OperationType type = autoFill.value();
 
         Object[] args = proceedingJoinPoint.getArgs();
         if (args == null || args.length == 0) {
-            return false;
+            return proceedingJoinPoint.proceed();
         }
         Object entity = args[0];
+
         Long currentId = BaseContext.getCurrentId();
-        Method setCreteUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_USER, Long.class);
+        Method setCreateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_USER, Long.class);
         Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
         Method setCreateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_TIME, LocalDateTime.class);
         Method setUpdateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
 
         if (type == OperationType.INSERT) {
-            setCreteUser.invoke(entity, currentId);
+            setCreateUser.invoke(entity, currentId);
             setUpdateUser.invoke(entity, currentId);
             setCreateTime.invoke(entity, LocalDateTime.now());
             setUpdateTime.invoke(entity, LocalDateTime.now());
         } else if (type == OperationType.UPDATE) {
             setUpdateUser.invoke(entity, currentId);
             setUpdateTime.invoke(entity, LocalDateTime.now());
-
         }
-        proceedingJoinPoint.proceed();
-        return true;
+
+        return proceedingJoinPoint.proceed();
     }
-
-
 }
