@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 import static com.sky.constant.StatusConstant.ENABLE;
@@ -64,19 +63,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public void save(EmployeeDTO employeeDTO) {
         Employee employee = new Employee();
-        employee.setId(employeeDTO.getId());
-        employee.setName(employeeDTO.getName());
-        employee.setSex(employeeDTO.getSex());
-        employee.setUsername(employeeDTO.getUsername());
-        employee.setIdNumber(employeeDTO.getUsername());
-        employee.setPhone(employeeDTO.getPhone());
-        employee.setCreateTime(LocalDateTime.now());
-        employee.setUpdateTime(LocalDateTime.now());
+        BeanUtils.copyProperties(employeeDTO, employee);
         employee.setPassword(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes(StandardCharsets.UTF_8)));
         employee.setStatus(ENABLE);
         Long updateId = BaseContext.getCurrentId();
-        employee.setCreateUser(updateId);
-        employee.setUpdateUser(updateId);
         employeeMapper.insert(employee);
     }
 
@@ -107,8 +97,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     public void edit(EmployeeDTO employeeDTO) {
         Employee employee = new Employee();
         BeanUtils.copyProperties(employeeDTO, employee);
-        employee.setUpdateTime(LocalDateTime.now());
-        employee.setUpdateUser(BaseContext.getCurrentId());
         employeeMapper.update(employee);
     }
 
