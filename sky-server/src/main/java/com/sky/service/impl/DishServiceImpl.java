@@ -10,7 +10,10 @@ import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.exception.StatusSetException;
-import com.sky.mapper.*;
+import com.sky.mapper.CategoryMapper;
+import com.sky.mapper.DishFlavorMapper;
+import com.sky.mapper.DishMapper;
+import com.sky.mapper.SetmealDishMapper;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
@@ -23,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static com.sky.constant.StatusConstant.DISABLE;
+
 @Service
 public class DishServiceImpl implements DishService {
 
@@ -33,8 +38,6 @@ public class DishServiceImpl implements DishService {
     @Autowired
     DishFlavorMapper dishFlavorMapper;
     @Autowired
-    SetmealMapper setmealMapper;
-    @Autowired
     SetmealDishMapper setmealDishMapper;
 
 
@@ -44,6 +47,7 @@ public class DishServiceImpl implements DishService {
         Dish dish = new Dish();
         List<DishFlavor> flavors = dishDTO.getFlavors();
         BeanUtils.copyProperties(dishDTO, dish);
+        dish.setStatus(DISABLE);
         dishMapper.insert(dish);
         Long dishId = dish.getId();
         if (flavors != null && !flavors.isEmpty()) {
