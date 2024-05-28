@@ -5,10 +5,7 @@ import com.sky.dto.DishDTO;
 import com.sky.entity.Dish;
 import com.sky.enumeration.OperationType;
 import com.sky.vo.DishVO;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Options;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
@@ -34,4 +31,10 @@ public interface DishMapper {
     List<Integer> getStatusByIds(List<Long> ids);
 
     void update(DishDTO dishDTO);
+
+    @Select("SELECT * from dish where category_id = #{categoryId}")
+    List<Dish> getByCategory(Long categoryId);
+
+    @Update("update dish set status = #{status} where id = #{id}")
+    void status(Long id, Integer status);
 }

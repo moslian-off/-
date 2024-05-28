@@ -44,17 +44,17 @@ public class EmployeeServiceImpl implements EmployeeService {
         //2、处理各种异常情况（用户名不存在、密码不对、账号被锁定）
         if (employee == null) {
             //账号不存在
-            throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
+            throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND + "," + MessageConstant.LOGIN_FAILED);
         }
 
         if (!password.equals(employee.getPassword())) {
             //密码错误
-            throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
+            throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR + "," + MessageConstant.LOGIN_FAILED);
         }
 
         if (Objects.equals(employee.getStatus(), StatusConstant.DISABLE)) {
             //账号被锁定
-            throw new AccountLockedException(MessageConstant.ACCOUNT_LOCKED);
+            throw new AccountLockedException(MessageConstant.ACCOUNT_LOCKED + "," + MessageConstant.LOGIN_FAILED);
         }
 
         //3、返回实体对象
@@ -108,13 +108,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         String oldPassword = employeePasswordDTO.getOldPassword();
         oldPassword = DigestUtils.md5DigestAsHex(oldPassword.getBytes());
         if (e == null) {
-            throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
+            throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND + "," + MessageConstant.PASSWORD_EDIT_FAILED);
         }
         if (e.getStatus() == 0) {
-            throw new AccountLockedException(MessageConstant.ACCOUNT_LOCKED);
+            throw new AccountLockedException(MessageConstant.ACCOUNT_LOCKED + "," + MessageConstant.PASSWORD_EDIT_FAILED);
         }
-        if (!oldPassword.equals(e.getPassword()) ) {
-            throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
+        if (!oldPassword.equals(e.getPassword())) {
+            throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR + "," + MessageConstant.PASSWORD_EDIT_FAILED);
         }
         String newPassword = employeePasswordDTO.getNewPassword();
         newPassword = DigestUtils.md5DigestAsHex(newPassword.getBytes());

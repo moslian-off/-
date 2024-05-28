@@ -1,5 +1,7 @@
 package com.sky.mapper;
 
+import com.sky.dto.SetmealDTO;
+import com.sky.entity.Setmeal;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -12,4 +14,12 @@ public interface SetmealMapper {
     Integer countByCategoryId(Long id);
 
     void batchDelete(List<Long> ids);
+
+    void update(SetmealDTO setmealDTO);
+
+    Object get(Setmeal setmeal);
+
+    List<Integer> getStatusByIds(List<Long> ids);
+
+    void status(Integer status, Long id);
 }

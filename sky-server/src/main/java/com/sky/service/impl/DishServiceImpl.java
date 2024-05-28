@@ -9,6 +9,7 @@ import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
 import com.sky.exception.DeletionNotAllowedException;
+import com.sky.exception.StatusSetException;
 import com.sky.mapper.*;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
@@ -109,6 +110,23 @@ public class DishServiceImpl implements DishService {
             dishFlavorMapper.batchInsert(flavors);
         }
         dishMapper.update(dishDTO);
+    }
+
+    @Override
+    public List<Dish> getByCategoryId(Long categoryId) {
+        List<Dish> dishes = dishMapper.getByCategory(categoryId);
+        return dishes;
+    }
+
+    @Override
+    public void status(Long id, Integer status) {
+        List<Long> ids = new ArrayList<>();
+        ids.add(id);
+        Integer preStatus = dishMapper.getStatusByIds(ids).get(0);
+        if (preStatus == status) {
+            throw new StatusSetException("状态设置错误");
+        }
+        dishMapper.status(id, status);
     }
 
 }
