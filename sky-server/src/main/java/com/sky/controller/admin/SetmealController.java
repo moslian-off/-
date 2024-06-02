@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("admin/setmeal")
+@RequestMapping("/admin/setmeal")
 @Slf4j
 public class SetmealController {
 
@@ -21,7 +21,7 @@ public class SetmealController {
     SetmealService setmealService;
 
     @PutMapping
-    public Result<String> update(SetmealDTO setmealDTO) {
+    public Result<String> update(@RequestBody SetmealDTO setmealDTO) {
         log.info("修改套餐数据");
         setmealService.update(setmealDTO);
         return Result.success("修改成功");
@@ -51,8 +51,8 @@ public class SetmealController {
         return Result.success();
     }
 
-    @GetMapping
-    public Result<SetmealVO> getById(@RequestParam Long id) {
+    @GetMapping("/{id}")
+    public Result<SetmealVO> getById(@PathVariable Long id) {
         SetmealVO setmealVO = setmealService.getById(id);
         return Result.success(setmealVO);
     }

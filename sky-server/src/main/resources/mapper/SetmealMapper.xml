@@ -5,10 +5,12 @@
     <update id="update">
         UPDATE setmeal
         <set>
-            category_id = #{categoryId},
-            `name` = #{name},
-            price = #{price},
-            image = #{image},
+            <if test="categoryId">category_id = #{categoryId},</if>
+            <if test="name != null and name != ''">`name` = #{name},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="image != null">image = #{image},</if>
+            update_time = #{updateTime},
+            update_user = #{updateUser},
             <if test="description != null and description != ''">
                 `description` = #{description},
             </if>
@@ -40,8 +42,9 @@
         from setmeal s left join category c on s.category_id = c.id
         <where>
             <if test="id != null">and s.id = #{id}</if>
-            <if test="name != null">and s.name = #{name}</if>
+            <if test="name != null">and s.name like concat("%", #{name},"%")</if>
             <if test="categoryId != null">and s.category_id = #{categoryId}</if>
         </where>
+        ORDER BY update_time desc
     </select>
 </mapper>

@@ -1,11 +1,13 @@
 package com.sky.mapper;
 
 import com.sky.annotation.AutoFill;
-import com.sky.dto.DishDTO;
 import com.sky.entity.Dish;
 import com.sky.enumeration.OperationType;
 import com.sky.vo.DishVO;
-import org.apache.ibatis.annotations.*;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -31,12 +33,8 @@ public interface DishMapper {
     List<Integer> getStatusByIds(List<Long> ids);
 
     @AutoFill(OperationType.UPDATE)
-    void update(DishDTO dishDTO);
+    void update(Dish dish);
 
     @Select("SELECT * from dish where category_id = #{categoryId}")
     List<Dish> getByCategory(Long categoryId);
-
-    @AutoFill(OperationType.UPDATE)
-    @Update("update dish set status = #{status} where id = #{id}")
-    void status(Long id, Integer status);
 }

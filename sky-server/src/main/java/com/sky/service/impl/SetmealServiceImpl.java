@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.dto.SetmealDTO;
@@ -44,7 +45,9 @@ public class SetmealServiceImpl implements SetmealService {
         ids.add(id);
         setmealDishMapper.batchDeleteBySetmealId(ids);
         setmealDishMapper.batchInsert(setmealDishes);
-        setmealMapper.update(setmealDTO);
+        Setmeal setmeal = new Setmeal();
+        BeanUtils.copyProperties(setmealDTO, setmeal);
+        setmealMapper.update(setmeal);
     }
 
     @Override
@@ -54,7 +57,8 @@ public class SetmealServiceImpl implements SetmealService {
         PageHelper.startPage(page, pageSize);
         Setmeal setmeal = new Setmeal();
         BeanUtils.copyProperties(setmealPageQueryDTO, setmeal);
-        return (PageResult) setmealMapper.get(setmeal);
+        Page<SetmealVO> p = (Page<SetmealVO>) setmealMapper.get(setmeal);
+        return new PageResult(p.getTotal(), p.getResult());
     }
 
     @Override
@@ -71,7 +75,8 @@ public class SetmealServiceImpl implements SetmealService {
                 throw new StatusSetException(MessageConstant.SETMEAL_ENABLE_FAILED);
             }
         }
-        setmealMapper.status(status, id);
+        Setmeal setmeal = Setmeal.builder().id(id).status(status).build();
+        setmealMapper.update(setmeal);
     }
 
     @Override
@@ -88,6 +93,7 @@ public class SetmealServiceImpl implements SetmealService {
     }
 
     @Override
+    @Transactional
     public void insert(SetmealDTO setmealDTO) {
         Setmeal setmeal = new Setmeal();
         List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();

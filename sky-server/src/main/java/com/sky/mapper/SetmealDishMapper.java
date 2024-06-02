@@ -19,6 +19,6 @@ public interface SetmealDishMapper {
             "on s.dish_id = d.id where s.setmeal_id = #{id}")
     List<Integer> getStatusBySetmealId(Long id);
 
-    @Select("SELECT * from setmeal_dish where id = #{id}")
+    @Select("SELECT * from setmeal_dish where setmeal_id = #{id}")
     List<SetmealDish> getBySetmealId(Long id);
 }

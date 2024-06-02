@@ -113,7 +113,9 @@ public class DishServiceImpl implements DishService {
             );
             dishFlavorMapper.batchInsert(flavors);
         }
-        dishMapper.update(dishDTO);
+        Dish dish = new Dish();
+        BeanUtils.copyProperties(dishDTO, dish);
+        dishMapper.update(dish);
     }
 
     @Override
@@ -123,6 +125,7 @@ public class DishServiceImpl implements DishService {
     }
 
     @Override
+    @Transactional
     public void status(Long id, Integer status) {
         List<Long> ids = new ArrayList<>();
         ids.add(id);
@@ -130,7 +133,8 @@ public class DishServiceImpl implements DishService {
         if (preStatus == status) {
             throw new StatusSetException("状态设置错误");
         }
-        dishMapper.status(id, status);
+        Dish dish = Dish.builder().id(id).status(status).build();
+        dishMapper.update(dish);
     }
 
 }
