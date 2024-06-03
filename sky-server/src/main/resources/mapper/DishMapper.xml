@@ -45,6 +45,7 @@
             <if test="name!=null and name != ''">and d.name like concat("%",#{name},"%")</if>
             <if test="categoryId != null">and d.category_id = #{categoryId}</if>
             <if test="status != null">and d.status = #{status}</if>
+            <if test="id != null">and d.id = #{id}</if>
         </where>
         order by d.update_time desc
     </select>

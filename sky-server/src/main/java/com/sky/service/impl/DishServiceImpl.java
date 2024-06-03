@@ -15,10 +15,17 @@ import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealDishMapper;
 import com.sky.result.PageResult;
+import com.sky.service.DIshFlavorService;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +38,8 @@ import static com.sky.constant.StatusConstant.DISABLE;
 @Service
 public class DishServiceImpl implements DishService {
 
+    private static final String CACHE_NAME = "dish-cache";
+
     @Autowired
     DishMapper dishMapper;
     @Autowired
@@ -39,7 +48,12 @@ public class DishServiceImpl implements DishService {
     DishFlavorMapper dishFlavorMapper;
     @Autowired
     SetmealDishMapper setmealDishMapper;
-
+    @Autowired
+    CacheManager cacheManager;
+    @Autowired
+    RedisTemplate redisTemplate;
+    @Autowired
+    DIshFlavorService dishFlavorService;
 
     @Transactional
     @Override
@@ -54,6 +68,19 @@ public class DishServiceImpl implements DishService {
             flavors.forEach(flavor -> flavor.setDishId(dishId));
             dishFlavorMapper.insert(flavors);
         }
+
+        DishVO dishVO = new DishVO();
+        BeanUtils.copyProperties(dish, dishVO);
+
+        Cache cache = cacheManager.getCache(CACHE_NAME);
+        if (cache != null) {
+            cache.put(dishId, dishVO);
+        } else {
+            ValueOperations valueOps = redisTemplate.opsForValue();
+            String nameAndKey = CACHE_NAME + "::" + dishId;
+            valueOps.set(nameAndKey, dishVO);
+        }
+
     }
 
     @Override
@@ -70,6 +97,7 @@ public class DishServiceImpl implements DishService {
     @Transactional
     @Override
     public void batchDelete(List<Long> ids) {
+        Cache cache = cacheManager.getCache(CACHE_NAME);
         List<Integer> statuses = dishMapper.getStatusByIds(ids);
         for (Integer status : statuses) {
             if (status == null) {
@@ -83,12 +111,15 @@ public class DishServiceImpl implements DishService {
         if (!setmealDishes.isEmpty()) {
             throw new DeletionNotAllowedException(MessageConstant.DISH_BE_RELATED_BY_SETMEAL);
         }
-
+        if (cache != null) {
+            for (Long id : ids) cache.evict(id);
+        }
         dishMapper.batchDelete(ids);
         dishFlavorMapper.batchDelete(ids);
     }
 
     @Override
+    @Cacheable(cacheNames = CACHE_NAME, key = "#id")
     public DishVO getById(Long id) {
         DishVO dishVO = dishMapper.get(Dish.builder().id(id).build()).get(0);
         List<DishFlavor> dishFlavors = dishFlavorMapper.getById(id);
@@ -98,6 +129,7 @@ public class DishServiceImpl implements DishService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = CACHE_NAME, key = "#dishDTO.id")
     public void update(DishDTO dishDTO) {
         List<DishFlavor> flavors = dishDTO.getFlavors();
         Long id = dishDTO.getId();
@@ -126,6 +158,7 @@ public class DishServiceImpl implements DishService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = CACHE_NAME, key = "#id")
     public void status(Long id, Integer status) {
         List<Long> ids = new ArrayList<>();
         ids.add(id);
@@ -139,9 +172,10 @@ public class DishServiceImpl implements DishService {
 
     @Override
     public List<DishVO> listWithFlavor(Dish dish) {
+
         List<DishVO> dishVOs = dishMapper.get(dish);
         for (DishVO d : dishVOs) {
-            d.setFlavors(dishFlavorMapper.getById(dish.getId()));
+            d.setFlavors(dishFlavorService.getDishFlavors(d.getId()));
         }
         return dishVOs;
     }

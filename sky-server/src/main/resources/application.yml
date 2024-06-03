@@ -23,6 +23,7 @@ spring:
     port: ${sky.redis.port}
 
 
+
 mybatis:
   #mapper配置文件
   mapper-locations: classpath:mapper/*.xml
@@ -38,6 +39,7 @@ logging:
         mapper: debug
         service: info
         controller: info
+    org.springframework.data.redis: DEBUG
 
 sky:
   jwt:
@@ -49,7 +51,7 @@ sky:
     admin-token-name: token
     user-secret-key: itheima
     user-ttl: 72000000
-    user-token-name: token
+    user-token-name: authentication
   alioss:
     access-key-id: ${sky.alioss.access-key-id}
     endpoint: ${sky.alioss.endpoint}
