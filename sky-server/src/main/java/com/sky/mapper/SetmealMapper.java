@@ -3,6 +3,7 @@ package com.sky.mapper;
 import com.sky.annotation.AutoFill;
 import com.sky.entity.Setmeal;
 import com.sky.enumeration.OperationType;
+import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -34,4 +35,10 @@ public interface SetmealMapper {
 
     List<SetmealVO> get(Setmeal setmeal);
 
+    List<Setmeal> list(Setmeal setmeal);
+
+    @Select("SELECT sd.name,sd.copies,d.image,d.description " +
+            "from setmeal_dish sd LEFT OUTER JOIN dish d " +
+            "on sd.dish_id = d.id")
+    List<DishItemVO> getDishItemById(Long id);
 }
